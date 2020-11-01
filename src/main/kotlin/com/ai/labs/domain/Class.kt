@@ -1,5 +1,6 @@
-package main.kotlin.com.ai.labs.domain
+package com.ai.labs.domain
 
+import com.ai.labs.domain.Course
 import com.ai.labs.domain.Room
 
 data class Class(val course: Course, val meetingDay: String, val meetingTime: String, val room: Room) {

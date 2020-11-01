@@ -1,7 +1,7 @@
-package main.kotlin.com.ai.labs
+package com.ai.labs
 
 import com.ai.labs.domain.*
-import main.kotlin.com.ai.labs.domain.Course
+import com.ai.labs.domain.Course
 
 class Data {
 
