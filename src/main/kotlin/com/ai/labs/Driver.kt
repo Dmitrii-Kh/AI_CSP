@@ -6,6 +6,7 @@ import kotlin.collections.HashMap
 fun main(){
     val driver = Driver(Data())
     driver.backtrackingSearch()?.forEach { println("$it       ${it.course.instructors}") }
+
 }
 
 class Driver(private val data : Data) {
@@ -20,16 +21,16 @@ class Driver(private val data : Data) {
 
     // Domains filling
     for(course in data.courses) {
-           domainsMap[course.name] = mutableListOf()
-           for(room in data.rooms) {
-               if(room.seatingCapacity >= course.group.size) {
-                   for(day in daysOfWeek){
-                       for(i in 1..6){
-                           domainsMap[course.name]?.add(listOf(day, i.toString(), room.number))
-                       }
-                   }
-               }
-           }
+        domainsMap[course.name] = mutableListOf()
+        for(room in lcvSorting()) {
+            if(data.getRoomByNumber(room.key).seatingCapacity >= course.group.size) {
+                for(day in daysOfWeek){
+                    for(i in 1..6){
+                        domainsMap[course.name]?.add(listOf(day, i.toString(), room.key))
+                    }
+                }
+            }
+        }
     }
 
         // CSP filling
@@ -63,8 +64,39 @@ class Driver(private val data : Data) {
     }
 
 
+    //Least constraining value heuristic
+    fun lcvSorting():HashMap<String, MutableList<String>>{
+        var groupsCapacity = HashMap<String,Int>()
+        for(course in data.courses){
+            groupsCapacity[course.group.name] = course.group.size
+        }
+        var roomsCapacity = HashMap<String,Int>()
+        for(room in data.rooms){
+            roomsCapacity[room.number] = room.seatingCapacity
+        }
+        var groupsInRoom = HashMap<String,MutableList<String>>()
+        for (group in groupsCapacity){
+
+            for (room in roomsCapacity){
+                if (room.value >= group.value){
+                    if (groupsInRoom[room.key] == null){
+                        groupsInRoom[room.key] = mutableListOf()
+                    }
+                    groupsInRoom[room.key]?.add(group.key)
+                }
+            }
+        }
+
+        groupsInRoom = groupsInRoom.toList().sortedBy { (_, value) -> value.size}.toMap() as HashMap<String, MutableList<String>>
+        return groupsInRoom
+    }
+
+
     fun backtrackingSearch() : MutableList<Class>? {
+
         return backtrack(mutableListOf())
+
+
     }
 
 
