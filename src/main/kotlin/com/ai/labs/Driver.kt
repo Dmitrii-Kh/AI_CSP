@@ -1,6 +1,6 @@
-package main.kotlin.com.ai.labs
-import main.kotlin.com.ai.labs.domain.Class
-import main.kotlin.com.ai.labs.domain.Course
+package com.ai.labs
+import com.ai.labs.domain.Class
+import com.ai.labs.domain.Course
 import kotlin.collections.HashMap
 
 fun main(){
@@ -83,12 +83,12 @@ class Driver(private val data : Data) {
 
 
     //Least constraining value heuristic
-    fun lcvSorting():HashMap<String, MutableList<String>>{
-        var groupsCapacity = HashMap<String,Int>()
+    private fun lcvSorting():HashMap<String, MutableList<String>>{
+        val groupsCapacity = HashMap<String,Int>()
         for(course in data.courses){
             groupsCapacity[course.group.name] = course.group.size
         }
-        var roomsCapacity = HashMap<String,Int>()
+        val roomsCapacity = HashMap<String,Int>()
         for(room in data.rooms){
             roomsCapacity[room.number] = room.seatingCapacity
         }
