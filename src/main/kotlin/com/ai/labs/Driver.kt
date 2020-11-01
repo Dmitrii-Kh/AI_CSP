@@ -23,7 +23,10 @@ fun main(){
     println("\nFriday:")
     printClasses(result, "Fr")
     println("\nExecution time = $duration ms")
-
+    //MRV + lsv + forward checking = 58 ms
+    //CSV + lsv + forward checking = 61 ms
+    //MRV + lsv = 47 ms
+    //CSV + lsv = 54 ms
 }
 
 fun printClasses(classes: MutableList<Class>?, d: String) {
