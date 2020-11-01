@@ -40,6 +40,7 @@ class Driver(private val data : Data) {
     private val domainsMap : HashMap<String, MutableList<List<String>>> = HashMap()         //key : course id    val : (("Mon", "1", "221"), ("Mon", "2", "222"), ...)
     private var cspSorted : HashMap<String, Int?>
     private var domainsMapSorted : HashMap<String, MutableList<List<String>>>
+    private var cspNeighbours : HashMap<String, MutableList<String>> = HashMap()
 
     init {
 
@@ -62,17 +63,20 @@ class Driver(private val data : Data) {
         // CSP filling
         for(key in data.courses){
             csp[key.name] = 0
+            cspNeighbours[key.name] = mutableListOf()
             for(course in data.courses){
                 if(key.name != course.name) {
                     //same group
                     if(key.group.name == course.group.name) {
                         csp[key.name] = csp[key.name]?.plus(1)
-                        break
+                        cspNeighbours[key.name]?.add(course.name)
+                        continue // <---
                     }
                     //or same instructor(s)
                     for(instructor in key.instructors) {
                         if(course.instructors.contains(instructor)){
                             csp[key.name] = csp[key.name]?.plus(1)
+                            cspNeighbours[key.name]?.add(course.name)
                             break
                         }
                     }
@@ -119,7 +123,6 @@ class Driver(private val data : Data) {
 
 
     fun backtrackingSearch() : MutableList<Class>? {
-
         return backtrack(mutableListOf())
     }
 
@@ -157,7 +160,7 @@ class Driver(private val data : Data) {
     private fun reduceDomainsOfUnassignedVars(cl : Class) : HashMap<String, MutableList<List<String>>> {
         val result = HashMap<String, MutableList<List<String>>>()
         for((k,v) in domainsMap){
-            if(cl.course.name != k) {
+            if(cl.course.name != k /*&& cspNeighbours.get(cl.course.name)?.contains(k)!!*/) {
                 val listOfIndices = mutableListOf<Int>()
                 for(i in 0 until v.size){
                     if(v[i][0] == cl.meetingDay && v[i][1] == cl.meetingTime) {
