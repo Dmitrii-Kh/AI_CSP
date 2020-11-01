@@ -1,12 +1,16 @@
-package main.kotlin.com.ai.labs
-import main.kotlin.com.ai.labs.domain.Class
-import main.kotlin.com.ai.labs.domain.Course
+package com.ai.labs
+import com.ai.labs.domain.Class
+import com.ai.labs.domain.Course
 import kotlin.collections.HashMap
 
 fun main(){
+    val startTime = System.currentTimeMillis()
+
     val driver = Driver(Data())
     //    driver.backtrackingSearch()?.forEach { println("$it       ${it.course.instructors}") }
     val result = driver.backtrackingSearch()
+    val endTime = System.currentTimeMillis()
+    val duration = endTime - startTime
     println("TIMETABLE:\n")
     println("MONDAY:")
     printClasses(result, "M")
@@ -18,6 +22,7 @@ fun main(){
     printClasses(result, "Th")
     println("\nFriday:")
     printClasses(result, "Fr")
+    println("\nExecution time = $duration ms")
 
 }
 
