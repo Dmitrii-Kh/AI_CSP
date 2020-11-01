@@ -12,6 +12,7 @@ class Driver(private val data : Data) {
     private val csp : HashMap<String, Int?> = HashMap()
     private val domainsMap : HashMap<String, MutableList<List<String>>> = HashMap()         //key : course id    val : (("Mon", "1", "221"), ("Mon", "2", "222"), ...)
     private var cspSorted : HashMap<String, Int?>
+    private var domainsMapSorted : HashMap<String, MutableList<List<String>>>
 
     init {
 
@@ -54,7 +55,9 @@ class Driver(private val data : Data) {
         }
 
         //sort *values* by desc
-        cspSorted = csp.toList().sortedByDescending { (_, value) -> value}.toMap<String, Int?>() as HashMap<String, Int?>
+        cspSorted = csp.toList().sortedByDescending { (_, value) -> value}.toMap() as HashMap<String, Int?>
+        //sort by asc
+        domainsMapSorted = domainsMap.toList().sortedBy { (_, value) -> value.size}.toMap() as HashMap<String, MutableList<List<String>>>
 
         //end of init
     }
@@ -67,10 +70,10 @@ class Driver(private val data : Data) {
 
     private fun backtrack(assignment : MutableList<Class>): MutableList<Class>? {
         if(assignment.size == data.courses.size) return assignment
-        val nextCourse = selectUnassignedVar(assignment)
+        val nextCourse = selectUnassignedVar(assignment, domainsMapSorted)      //TODO if else MRV | Degree
             if (nextCourse != null) {
                 for(list in domainsMap.getValue(nextCourse.name)){  //list[0]=day list[1]=1..6 list[2]=room
-                    if(isConsistent(list, assignment)){
+                    if(isConsistent(list, assignment, nextCourse)){
                         assignment.add(Class(nextCourse, list[0], list[1], data.getRoomByNumber(list[2])))
                         val result = backtrack(assignment)
                         if(result != null) {
@@ -84,19 +87,27 @@ class Driver(private val data : Data) {
         return null
     }
 
-    private fun isConsistent(list : List<String>, assignment: MutableList<Class>) : Boolean {
+    private fun isConsistent(list : List<String>, assignment: MutableList<Class>, c : Course) : Boolean {
         for (cl in assignment){
             if(cl.meetingDay == list[0] && cl.meetingTime == list[1] && cl.room.number == list[2]) return false
+            if(cl.meetingDay == list[0] && cl.meetingTime == list[1]) {
+
+                if(c.group.name == cl.course.group.name) return false
+
+                for (instructor in c.instructors) {
+                    if (cl.course.instructors.contains(instructor)) return false
+                }
+            }
         }
         return true
     }
 
 
-    private fun selectUnassignedVar(assignment: MutableList<Class>): Course? {
+    private fun <E>selectUnassignedVar(assignment: MutableList<Class>, hm : HashMap<String, E> ): Course? {
         var contains : Boolean
-        if(assignment.size==0) return data.getCourseByName(cspSorted.keys.first())
+        if(assignment.size==0) return data.getCourseByName(hm.keys.first())
 
-        for (courseName in cspSorted.keys) {
+        for (courseName in hm.keys) {
             contains = false
             for (cl in assignment){
                 if(courseName == cl.course.name){
@@ -108,5 +119,8 @@ class Driver(private val data : Data) {
         }
         return null
     }
+
+
+
 
 }
