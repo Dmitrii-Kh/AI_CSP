@@ -1,13 +1,32 @@
-package main.kotlin.com.ai.labs
-import main.kotlin.com.ai.labs.domain.Class
-import main.kotlin.com.ai.labs.domain.Course
+package com.ai.labs
+import com.ai.labs.domain.Class
+import com.ai.labs.domain.Course
 import kotlin.collections.HashMap
 
 fun main(){
     val driver = Driver(Data())
-    driver.backtrackingSearch()?.forEach { println("$it       ${it.course.instructors}") }
+    //    driver.backtrackingSearch()?.forEach { println("$it       ${it.course.instructors}") }
+    val result = driver.backtrackingSearch()
+    println("TIMETABLE:\n")
+    println("MONDAY:")
+    printClasses(result, "M")
+    println("\nTuesday:")
+    printClasses(result, "T")
+    println("\nWednesday:")
+    printClasses(result, "W")
+    println("\nThursday:")
+    printClasses(result, "Th")
+    println("\nFriday:")
+    printClasses(result, "Fr")
+
 }
 
+fun printClasses(classes: MutableList<Class>?, d: String) {
+    classes
+        ?.filter { it.meetingDay == d }
+        ?.sortedBy { clazz: Class -> clazz.meetingTime }
+        ?.forEach { println("${it.course}: time:${it.meetingTime}, room: ${it.room}, instructors: ${it.course.instructors}") }
+}
 class Driver(private val data : Data) {
     private val csp : HashMap<String, Int?> = HashMap()
     private val domainsMap : HashMap<String, MutableList<List<String>>> = HashMap()         //key : course id    val : (("Mon", "1", "221"), ("Mon", "2", "222"), ...)
@@ -93,24 +112,24 @@ class Driver(private val data : Data) {
     private fun returnReducedDomains(hm : HashMap<String, MutableList<List<String>>>) {
         for ((k,v) in hm) {
             for (l in v) {
-                domainsMap.get(k)?.add(l)
+                domainsMap[k]?.add(l)
             }
         }
     }
 
     private fun reduceDomainsOfUnassignedVars(cl : Class) : HashMap<String, MutableList<List<String>>> {
-        var result = HashMap<String, MutableList<List<String>>>()
+        val result = HashMap<String, MutableList<List<String>>>()
         for((k,v) in domainsMap){
             if(cl.course.name != k) {
-                var listOfIndices = mutableListOf<Int>()
-                for(i in 0..v.size-1){
-                    if(v.get(i)[0] == cl.meetingDay && v.get(i)[1] == cl.meetingTime) {
+                val listOfIndices = mutableListOf<Int>()
+                for(i in 0 until v.size){
+                    if(v[i][0] == cl.meetingDay && v[i][1] == cl.meetingTime) {
 
-                        if((v.get(i)[2] == cl.room.number) || (data.getCourseByName(k)?.group?.name == cl.course.group.name)){
+                        if((v[i][2] == cl.room.number) || (data.getCourseByName(k)?.group?.name == cl.course.group.name)){
                             if(result.containsKey(k)){
-                                result.get(k)?.add(listOf(v.get(i)[0], v.get(i)[1], v.get(i)[2]))
+                                result[k]?.add(listOf(v[i][0], v[i][1], v[i][2]))
                             } else {
-                                result.put(k, mutableListOf(v.get(i)))
+                                result[k] = mutableListOf(v[i])
                             }
                             listOfIndices.add(i)
                             continue
@@ -119,9 +138,9 @@ class Driver(private val data : Data) {
                         for(instructor in cl.course.instructors) {
                             if(data.getCourseByName(k)?.instructors?.contains(instructor)!!){
                                 if(result.containsKey(k)){
-                                    result.get(k)?.add(listOf(v.get(i)[0], v.get(i)[1], v.get(i)[2]))
+                                    result[k]?.add(listOf(v[i][0], v[i][1], v[i][2]))
                                 } else {
-                                    result.put(k, mutableListOf(v.get(i)))
+                                    result[k] = mutableListOf(v[i])
                                 }
                                 listOfIndices.add(i)
                                 break
@@ -138,8 +157,6 @@ class Driver(private val data : Data) {
         return result
     }
 
-
-
     private fun isConsistent(list : List<String>, assignment: MutableList<Class>, c : Course) : Boolean {
         for (cl in assignment){
             if(cl.meetingDay == list[0] && cl.meetingTime == list[1] && cl.room.number == list[2]) return false
@@ -154,7 +171,6 @@ class Driver(private val data : Data) {
         }
         return true
     }
-
 
     private fun <E>selectUnassignedVar(assignment: MutableList<Class>, hm : HashMap<String, E> ): Course? {
         var contains : Boolean
@@ -172,8 +188,5 @@ class Driver(private val data : Data) {
         }
         return null
     }
-
-
-
 
 }
